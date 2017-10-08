@@ -9,9 +9,12 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.SnapHelper;
 import android.support.v7.widget.StaggeredGridLayoutManager;
 import android.support.v7.widget.Toolbar;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.view.View;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -65,7 +68,35 @@ public class MainActivity extends AppCompatActivity {
 
         recyclerView.setItemAnimator(new DefaultItemAnimator());
 
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new ItemTouchHelper.SimpleCallback(ItemTouchHelper.DOWN|ItemTouchHelper.UP,ItemTouchHelper.RIGHT|ItemTouchHelper.LEFT) {
 
+
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                int from = viewHolder.getAdapterPosition();
+                int to = target.getAdapterPosition();
+                Expense fromExpense = mExpenses.get(from);
+                Expense toExpense = mExpenses.get(to);
+                mExpenses.set(from,toExpense);
+                mExpenses.set(to,fromExpense);
+                adapter.notifyItemMoved(from,to);
+
+                return true;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                mExpenses.remove(position);
+                adapter.notifyItemRemoved(position);
+
+            }
+        });
+
+        itemTouchHelper.attachToRecyclerView(recyclerView);
+
+        SnapHelper snapHelper = new LinearSnapHelper();
+        snapHelper.attachToRecyclerView(recyclerView);
 
 
 
